@@ -12,7 +12,10 @@
     "build": "bun build ./src/cli.ts --outdir dist --target bun",
     "test": "bun test",
     "typecheck": "bunx tsc --noEmit",
-    "check": "bun run typecheck && bun run test"
+    "check": "bun run typecheck && bun run test",
+    "env:check": "bun scripts/deploy/check-runtime-env.ts",
+    "docker:build": "docker build -t agentfix:local .",
+    "docker:run": "docker run --rm -p 8787:8787 --env-file .env agentfix:local"
   },
   "dependencies": {
     "fastify": "^5.2.1",

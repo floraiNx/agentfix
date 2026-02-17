@@ -1,49 +1,66 @@
 # End-to-End Demo Runbook
 
-Use this runbook to demonstrate AgentFix in under 15 minutes.
+Use this runbook for a live 10-15 minute demo.
 
-## Goal
+## What you will show
 
-Show complete loop:
+1. a PR gets `changes_requested`
+2. AgentFix verifies webhook signature
+3. AgentFix extracts review findings
+4. AgentFix dispatches remediation to OpenClaw
+5. AgentFix posts status comment on the PR
 
-1. PR receives `changes_requested`
-2. AgentFix receives webhook
-3. Findings are extracted
-4. OpenClaw dispatch is executed
-5. PR receives status comment
+## Step 1: Create a demo target repository
 
-## Prerequisites
+Use the bootstrap script:
 
-- AgentFix deployed and reachable over HTTPS
-- GitHub App installed on demo repo
-- `OPENCLAW_TOKEN` configured
+```bash
+bash scripts/demo/create-demo-repo.sh --name agentfix-demo-target --visibility private
+```
 
-## Demo steps
+Output includes:
 
-1. Open a test PR in demo repository
-2. Add review comments on concrete lines (at least one)
-3. Submit review with `Request changes`
-4. Observe AgentFix logs
-5. Refresh PR and verify status comment from AgentFix
+- local repo path
+- GitHub repo URL
+- PR URL (unless `--skip-pr`)
+
+The script creates a PR with an intentionally introduced tenant-isolation bug.
+
+## Step 2: Install GitHub App on the demo repo
+
+Follow `docs/github-app-setup.md` and install the app on the generated demo repo.
+
+## Step 3: Submit review requesting changes
+
+In the demo PR:
+
+1. add an inline review comment on `src/order-service.js`
+2. submit review as `Request changes`
+
+## Step 4: Observe AgentFix service logs
+
+Expected sequence:
+
+1. webhook accepted
+2. installation token exchange success
+3. review comments fetched
+4. findings extracted
+5. OpenClaw dispatch result logged
+6. status comment posted on PR
 
 ## Success criteria
 
-- webhook accepted (HTTP 200)
+- webhook response `200`
 - no signature errors
-- installation token exchange succeeds
 - findings count > 0
-- dispatch response `ok: true`
+- provider dispatch `ok: true`
+- PR includes AgentFix status comment
 
-## Demo troubleshooting
+## Troubleshooting
 
-- No webhook events:
-  - verify app installed on repo
-  - verify webhook URL and SSL
-- Signature errors:
-  - mismatch between app webhook secret and runtime `GITHUB_WEBHOOK_SECRET`
-- No findings:
-  - reviewer login not in `githubApp.reviewAuthors`
-  - no inline review comments on PR
-- Dispatch failure:
-  - invalid `OPENCLAW_TOKEN`
-  - provider URL unreachable or non-compatible
+- `401 Invalid webhook signature`
+  - mismatch in GitHub App webhook secret vs `GITHUB_WEBHOOK_SECRET`
+- `502 GitHub App flow failed`
+  - wrong app ID/private key, app not installed, missing permissions
+- `dispatch failed`
+  - invalid OpenClaw token or endpoint incompatibility

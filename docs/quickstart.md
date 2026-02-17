@@ -44,6 +44,7 @@ Optional provider keys:
 ## 4) Run locally
 
 ```bash
+bun run env:check
 bun src/cli.ts run autofix --event-file examples/sample-autofix-event.json --dry-run
 bun src/cli.ts run bughunt --dry-run
 ```
@@ -68,6 +69,12 @@ Create a GitHub App and configure:
   - Issues: Write
 
 Install the app on a repository and trigger a `pull_request_review` event with `changes_requested`.
+
+## 7) Optional: create a live demo repo
+
+```bash
+bash scripts/demo/create-demo-repo.sh --name agentfix-demo-target --visibility private
+```
 
 For full details see:
 

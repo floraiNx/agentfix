@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: agentfix
+    runtime: docker
+    plan: starter
+    autoDeploy: true
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: OPENCLAW_TOKEN
+        sync: false
+      - key: GITHUB_APP_ID
+        sync: false
+      - key: GITHUB_APP_PRIVATE_KEY
+        sync: false
+      - key: GITHUB_WEBHOOK_SECRET
+        sync: false

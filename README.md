@@ -25,6 +25,7 @@ It gives teams a reusable control plane for:
 bun install
 bun run check
 bun run build
+bun run env:check
 
 # Create starter files
 bun src/cli.ts init
@@ -74,6 +75,29 @@ Manifest helpers:
 
 - `examples/github-app-manifest.example.json`
 - `agentfix scaffold github-app-manifest ...`
+
+## Deploy
+
+Production deployment options are ready in-repo:
+
+- Docker: `Dockerfile`, `docker-compose.yml`
+- Render: `render.yaml`
+- Railway: `railway.json`
+- Fly.io: `fly.toml`
+
+See: `docs/deploy.md`
+
+## End-to-End Demo
+
+Generate a real demo target repo + PR automatically:
+
+```bash
+bash scripts/demo/create-demo-repo.sh --name agentfix-demo-target --visibility private
+```
+
+Then submit a PR review with `changes_requested` to trigger AgentFix.
+
+See: `docs/e2e-demo.md`
 
 ## Repository Contract
 
