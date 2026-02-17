@@ -1,11 +1,12 @@
 #!/usr/bin/env bun
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { loadConfig } from "./config/load-config";
 import { info, fail } from "./core/logger";
 import { createServer } from "./server/app";
 import { defaultConfigYaml } from "./templates/default-config";
 import { prRemediationWorkflowTemplate, sentryGapWorkflowTemplate } from "./templates/workflows";
+import { githubAppManifestTemplate } from "./templates/github-app-manifest";
 import type { AutoFixEvent } from "./types";
 import { runAutoFix } from "./modes/auto-fix";
 import { runBugHunt } from "./modes/bug-hunt";
@@ -38,6 +39,35 @@ async function cmdInit(): Promise<void> {
   ensureFile(resolve(workflowsDir, "agentfix-sentry-gap.yml"), `${sentryGapWorkflowTemplate()}\n`);
 
   info("init complete");
+}
+
+async function cmdScaffoldGitHubAppManifest(): Promise<void> {
+  const appName = parseArg("--app-name") ?? "AgentFix";
+  const appUrl = parseArg("--app-url");
+  const webhookUrl = parseArg("--webhook-url");
+  const callbackUrl = parseArg("--callback-url");
+  const outFile = parseArg("--out") ?? ".agentfix/github-app-manifest.json";
+
+  if (!appUrl || !webhookUrl || !callbackUrl) {
+    fail("Missing required flags. Use --app-url, --webhook-url, and --callback-url.");
+  }
+
+  const outputPath = resolve(process.cwd(), outFile);
+  const outputDir = dirname(outputPath);
+  mkdirSync(outputDir, { recursive: true });
+
+  writeFileSync(
+    outputPath,
+    githubAppManifestTemplate({
+      appName,
+      appUrl,
+      webhookUrl,
+      callbackUrl
+    }),
+    "utf8"
+  );
+
+  info(`created: ${outputPath}`);
 }
 
 async function cmdServe(): Promise<void> {
@@ -77,6 +107,7 @@ function printHelp(): void {
     "",
     "Commands:",
     "  init",
+    "  scaffold github-app-manifest --app-url <url> --webhook-url <url> --callback-url <url> [--app-name AgentFix] [--out .agentfix/github-app-manifest.json]",
     "  serve [--port 8787]",
     "  run autofix --event-file <path> [--dry-run]",
     "  run bughunt [--session-root <path>] [--dry-run]"
@@ -98,6 +129,11 @@ async function main(): Promise<void> {
 
   if (command === "serve") {
     await cmdServe();
+    return;
+  }
+
+  if (command === "scaffold" && subCommand === "github-app-manifest") {
+    await cmdScaffoldGitHubAppManifest();
     return;
   }
 

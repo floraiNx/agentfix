@@ -10,6 +10,10 @@ bun install
 
 ```bash
 bun src/cli.ts init
+bun src/cli.ts scaffold github-app-manifest \
+  --app-url https://agentfix.example.com \
+  --webhook-url https://agentfix.example.com/webhooks/github \
+  --callback-url https://agentfix.example.com/auth/callback
 ```
 
 This creates:
@@ -17,6 +21,7 @@ This creates:
 - `.agentfix.yml`
 - `.github/workflows/agentfix-pr-remediation.yml`
 - `.github/workflows/agentfix-sentry-gap.yml`
+- `.agentfix/github-app-manifest.json`
 
 ## 3) Configure secrets
 
@@ -63,3 +68,9 @@ Create a GitHub App and configure:
   - Issues: Write
 
 Install the app on a repository and trigger a `pull_request_review` event with `changes_requested`.
+
+For full details see:
+
+- `docs/github-app-setup.md`
+- `docs/deploy.md`
+- `docs/e2e-demo.md`

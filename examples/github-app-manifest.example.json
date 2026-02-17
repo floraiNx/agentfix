@@ -1,0 +1,25 @@
+{
+  "name": "AgentFix",
+  "url": "https://agentfix.example.com",
+  "hook_attributes": {
+    "url": "https://agentfix.example.com/webhooks/github",
+    "active": true
+  },
+  "redirect_url": "https://agentfix.example.com/auth/callback",
+  "callback_urls": [
+    "https://agentfix.example.com/auth/callback"
+  ],
+  "description": "AgentFix GitHub App for automated remediation and bug-hunt orchestration.",
+  "public": false,
+  "default_permissions": {
+    "contents": "read",
+    "issues": "write",
+    "pull_requests": "read",
+    "metadata": "read"
+  },
+  "default_events": [
+    "pull_request_review",
+    "issue_comment",
+    "ping"
+  ]
+}

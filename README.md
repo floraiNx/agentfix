@@ -1,104 +1,138 @@
 # AgentFix
 
-AgentFix is a repo-agnostic GitHub automation toolkit for:
+AgentFix is a repo-agnostic automation platform for AI-assisted remediation and multi-agent bug-hunt campaigns.
 
-- `auto-fix` mode: review/Sentry-triggered remediation with OpenClaw/Codex/Claude adapters
-- `bug-hunt` mode: multi-agent parallel sweeps with scoped worktrees and merge polling
+It gives teams a reusable control plane for:
 
-Built from real production orchestration patterns, packaged so any repo can use it.
+- review-driven auto-fix dispatch
+- Sentry-style error triage into fix workflows
+- parallel bug-hunt orchestration with branch-safe merge polling
 
-## Why this is useful
+## What you get
 
-Most teams can wire one workflow, but few teams can run a safe loop end-to-end:
+- **GitHub App runtime** with webhook signature verification
+- **OpenClaw-first dispatch adapter** (`/v1/chat/completions` compatible)
+- **Auto-fix prompt planner** with finding deduplication
+- **Bug-hunt campaign orchestration** (worktrees, workers, poller)
+- **Config contract** via `.agentfix.yml`
+- **Scaffold tooling** for workflows and GitHub App manifest
+- **Tests + docs** ready for external adoption
+- **CI workflow** to enforce typecheck, tests, and build
 
-1. detect problem
-2. dispatch to an agent provider
-3. open reviewable PRs
-4. enforce test gates
-5. avoid duplicate/looping fixes
-
-AgentFix ships that as reusable building blocks.
-
-## Quick start
+## Quick Start
 
 ```bash
 bun install
-bun run typecheck
-bun run test
+bun run check
 bun run build
 
-# Generate starter config and workflow templates
+# Create starter files
 bun src/cli.ts init
 
-# Dry-run auto-fix with an event payload
+# Dry-run auto-fix planner
 bun src/cli.ts run autofix --event-file examples/sample-autofix-event.json --dry-run
 
-# Dry-run bug-hunt orchestration plan
+# Dry-run bug-hunt command planning
 bun src/cli.ts run bughunt --dry-run
 ```
 
-## Core commands
+## CLI
 
-- `agentfix init`
-- `agentfix serve --port 8787`
-- `agentfix run autofix --event-file <file> [--dry-run]`
-- `agentfix run bughunt [--session-root <path>] [--dry-run]`
+```bash
+agentfix init
+agentfix scaffold github-app-manifest \
+  --app-url https://agentfix.example.com \
+  --webhook-url https://agentfix.example.com/webhooks/github \
+  --callback-url https://agentfix.example.com/auth/callback
+agentfix serve --port 8787
+agentfix run autofix --event-file examples/sample-autofix-event.json --dry-run
+agentfix run bughunt --session-root /tmp/agentfix-bughunt --dry-run
+```
 
-## GitHub App mode
+## GitHub App Setup (fast path)
 
-AgentFix can run as a GitHub App webhook receiver.
-
-1. Create a GitHub App and set:
-- Webhook URL: `https://<your-host>/webhooks/github`
-- Webhook secret: set same value as `GITHUB_WEBHOOK_SECRET`
-- Permissions:
-  - `Pull requests: Read`
-  - `Contents: Read`
-  - `Issues: Write` (for status comments)
-2. Install the app on a test repository.
-3. Set env vars from `.env.example`.
-4. Start server:
+1. Create a GitHub App and configure webhook URL: `https://<host>/webhooks/github`
+2. Configure required permissions:
+- `Pull requests: Read`
+- `Contents: Read`
+- `Issues: Write`
+- `Metadata: Read`
+3. Install app on a test repo
+4. Set env vars from `.env.example`
+5. Run server:
 
 ```bash
 bun src/cli.ts serve --port 8787
 ```
 
-## Repo setup contract
+Health checks:
 
-Add `.agentfix.yml`:
+- `GET /health`
+- `GET /app/meta`
+
+Manifest helpers:
+
+- `examples/github-app-manifest.example.json`
+- `agentfix scaffold github-app-manifest ...`
+
+## Repository Contract
+
+`.agentfix.yml` controls provider and mode behavior.
 
 ```yaml
 version: 1
 providers:
   openclaw:
-    baseUrl: https://your-openclaw-host
+    baseUrl: https://openclaw.example.com
     tokenEnv: OPENCLAW_TOKEN
     model: openai-codex/gpt-5.3-codex
+githubApp:
+  enabled: true
+  appIdEnv: GITHUB_APP_ID
+  privateKeyEnv: GITHUB_APP_PRIVATE_KEY
+  webhookSecretEnv: GITHUB_WEBHOOK_SECRET
+  apiBaseUrl: https://api.github.com
+  reviewAuthors: ["greptile", "greptile[bot]"]
 modes:
   autoFix:
     enabled: true
-    maxAttempts: 2
     requireLabel: auto-fix
+    maxAttempts: 2
+    gateCommand: bun run test
   bugHunt:
     enabled: true
-    profile: focused
     baseBranch: dev
+    profile: focused
+    gateCommand: bun run test
+    commitPrefixes: [fix, chore]
 ```
 
-## Documentation
+## Docs
 
+- `docs/README.md`
 - `docs/quickstart.md`
+- `docs/github-app-setup.md`
+- `docs/deploy.md`
+- `docs/e2e-demo.md`
 - `docs/architecture.md`
 - `docs/operations.md`
+- `docs/provenance.md`
 
-## Status
+## Development
 
-`v0.1.0` bootstraps the standalone platform:
+```bash
+bun run typecheck
+bun test
+bun run build
+```
 
-- configuration schema and validation
-- OpenClaw dispatch client
-- auto-fix planner + prompt builder
-- bug-hunt planner + shell orchestration scripts
-- webhook server entrypoint
-- workflow template generators
-- tests for schema, dedupe, and template outputs
+## Security Notes
+
+- Webhooks are verified with `x-hub-signature-256`
+- GitHub App tokens are short-lived installation tokens
+- Private keys are loaded from environment only
+- Auto-fix mode can be gated by label and max-attempts policy
+
+## License
+
+MIT
