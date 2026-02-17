@@ -25,6 +25,12 @@ Required for OpenClaw dispatch:
 - `OPENCLAW_TOKEN`
 - Use `providers.openclaw.baseUrl` in `.agentfix.yml`
 
+Required for GitHub App runtime:
+
+- `GITHUB_APP_ID`
+- `GITHUB_APP_PRIVATE_KEY`
+- `GITHUB_WEBHOOK_SECRET`
+
 Optional provider keys:
 
 - `OPENAI_API_KEY`
@@ -44,3 +50,16 @@ bun src/cli.ts serve --port 8787
 ```
 
 The server accepts GitHub-style webhooks at `POST /webhooks/github`.
+
+## 6) GitHub App setup
+
+Create a GitHub App and configure:
+
+- Webhook URL: `https://<your-host>/webhooks/github`
+- Webhook secret: same value as `GITHUB_WEBHOOK_SECRET`
+- Permissions:
+  - Pull requests: Read
+  - Contents: Read
+  - Issues: Write
+
+Install the app on a repository and trigger a `pull_request_review` event with `changes_requested`.

@@ -27,3 +27,9 @@ If a provider dispatch fails:
 2. Check provider URL reachability
 3. Retry with `--dry-run` first to inspect payload
 4. Fallback to manual patch PR
+
+If GitHub App webhook calls fail:
+
+1. Verify `GITHUB_WEBHOOK_SECRET` matches your GitHub App webhook config
+2. Check `GET /app/meta` for missing app envs
+3. Ensure app is installed on target repo and payload contains `installation.id`

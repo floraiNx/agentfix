@@ -1,6 +1,6 @@
 # Provenance (What was ported)
 
-This repository is intentionally based on battle-tested orchestration patterns from Shoppex.
+This repository is intentionally based on battle-tested orchestration patterns from a production ecommerce stack.
 
 ## Imported design patterns
 
@@ -19,7 +19,7 @@ This repository is intentionally based on battle-tested orchestration patterns f
 - latest-event stack trace enrichment
 - queueing data model for follow-up dispatch
 
-## Shoppex reference commits
+## Source reference commits
 
 - `0d6f5512` – multi-agent bug-hunt playbook
 - `8dba48f2` – autonomous merge poller

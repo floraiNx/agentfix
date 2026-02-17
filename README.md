@@ -5,7 +5,7 @@ AgentFix is a repo-agnostic GitHub automation toolkit for:
 - `auto-fix` mode: review/Sentry-triggered remediation with OpenClaw/Codex/Claude adapters
 - `bug-hunt` mode: multi-agent parallel sweeps with scoped worktrees and merge polling
 
-Built from real production orchestration patterns used in Shoppex, but packaged so any repo can use it.
+Built from real production orchestration patterns, packaged so any repo can use it.
 
 ## Why this is useful
 
@@ -43,6 +43,25 @@ bun src/cli.ts run bughunt --dry-run
 - `agentfix serve --port 8787`
 - `agentfix run autofix --event-file <file> [--dry-run]`
 - `agentfix run bughunt [--session-root <path>] [--dry-run]`
+
+## GitHub App mode
+
+AgentFix can run as a GitHub App webhook receiver.
+
+1. Create a GitHub App and set:
+- Webhook URL: `https://<your-host>/webhooks/github`
+- Webhook secret: set same value as `GITHUB_WEBHOOK_SECRET`
+- Permissions:
+  - `Pull requests: Read`
+  - `Contents: Read`
+  - `Issues: Write` (for status comments)
+2. Install the app on a test repository.
+3. Set env vars from `.env.example`.
+4. Start server:
+
+```bash
+bun src/cli.ts serve --port 8787
+```
 
 ## Repo setup contract
 

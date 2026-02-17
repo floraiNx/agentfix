@@ -20,6 +20,11 @@
 6. `src/server/app.ts`
 - Webhook server for GitHub events
 
+7. `src/github/*`
+- GitHub App JWT creation
+- Installation token exchange
+- Review comment fetch + webhook signature verification
+
 ## Data flow: auto-fix
 
 GitHub review/Sentry issue -> AgentFix server/CLI -> AutoFix planner -> provider dispatch -> status result.

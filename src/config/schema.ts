@@ -21,11 +21,21 @@ const bugHuntSchema = z.object({
   commitPrefixes: z.array(z.string().min(1)).default(["fix", "chore"])
 });
 
+const githubAppSchema = z.object({
+  enabled: z.boolean().default(true),
+  appIdEnv: z.string().min(1).default("GITHUB_APP_ID"),
+  privateKeyEnv: z.string().min(1).default("GITHUB_APP_PRIVATE_KEY"),
+  webhookSecretEnv: z.string().min(1).default("GITHUB_WEBHOOK_SECRET"),
+  apiBaseUrl: z.string().url().default("https://api.github.com"),
+  reviewAuthors: z.array(z.string().min(1)).default(["greptile", "greptile[bot]"])
+});
+
 export const agentFixConfigSchema = z.object({
   version: z.literal(1).default(1),
   providers: z.object({
     openclaw: openClawSchema
   }),
+  githubApp: githubAppSchema.default({}),
   modes: z.object({
     autoFix: autoFixSchema,
     bugHunt: bugHuntSchema
