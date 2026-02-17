@@ -1,0 +1,60 @@
+export function prRemediationWorkflowTemplate(): string {
+  return [
+    "name: AgentFix PR Remediation",
+    "",
+    "on:",
+    "  pull_request_review:",
+    "    types: [submitted]",
+    "  workflow_dispatch:",
+    "    inputs:",
+    "      pr_number:",
+    "        description: 'PR number to remediate'",
+    "        required: true",
+    "        type: number",
+    "",
+    "permissions:",
+    "  contents: write",
+    "  pull-requests: write",
+    "",
+    "jobs:",
+    "  dispatch:",
+    "    runs-on: ubuntu-latest",
+    "    steps:",
+    "      - uses: actions/checkout@v4",
+    "      - uses: oven-sh/setup-bun@v2",
+    "      - run: bun install --frozen-lockfile || bun install",
+    "      - name: Run AgentFix auto-fix planner",
+    "        run: |",
+    "          bun src/cli.ts run autofix --event-file examples/sample-autofix-event.json --dry-run"
+  ].join("\n");
+}
+
+export function sentryGapWorkflowTemplate(): string {
+  return [
+    "name: AgentFix Sentry Gap",
+    "",
+    "on:",
+    "  schedule:",
+    "    - cron: '0 */4 * * *'",
+    "  workflow_dispatch:",
+    "",
+    "permissions:",
+    "  contents: write",
+    "  issues: write",
+    "  pull-requests: write",
+    "",
+    "jobs:",
+    "  detect:",
+    "    runs-on: ubuntu-latest",
+    "    steps:",
+    "      - uses: actions/checkout@v4",
+    "      - uses: oven-sh/setup-bun@v2",
+    "      - run: bun install --frozen-lockfile || bun install",
+    "      - name: Fetch Sentry issues",
+    "        run: |",
+    "          echo 'Wire your Sentry fetch script or API call here'",
+    "      - name: Dispatch AgentFix",
+    "        run: |",
+    "          bun src/cli.ts run autofix --event-file examples/sample-autofix-event.json --dry-run"
+  ].join("\n");
+}

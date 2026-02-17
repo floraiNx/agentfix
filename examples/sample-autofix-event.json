@@ -1,0 +1,18 @@
+{
+  "source": "greptile",
+  "repository": "acme/shop",
+  "targetBranch": "dev",
+  "issueRef": "PR-42",
+  "findings": [
+    {
+      "file": "apps/backend/src/routes/orders.ts",
+      "line": 88,
+      "summary": "Missing tenant check before update"
+    },
+    {
+      "file": "apps/backend/src/services/order-service.ts",
+      "line": 121,
+      "summary": "Retry loop can double-submit on timeout"
+    }
+  ]
+}

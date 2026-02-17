@@ -1,0 +1,26 @@
+{
+  "name": "agentfix",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Repo-agnostic agent orchestration for auto-fix and bug-hunt workflows",
+  "bin": {
+    "agentfix": "./src/cli.ts"
+  },
+  "scripts": {
+    "dev": "bun --watch src/cli.ts",
+    "build": "bun build ./src/cli.ts --outdir dist --target bun",
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit",
+    "check": "bun run typecheck && bun run test"
+  },
+  "dependencies": {
+    "fastify": "^5.2.1",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2",
+    "@types/node": "^22.13.8"
+  }
+}

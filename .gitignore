@@ -1,0 +1,11 @@
+node_modules
+bun.lockb
+bun.lock
+.env
+.env.*
+!.env.example
+dist
+.runtime
+.bughunt-runtime
+coverage
+.DS_Store
