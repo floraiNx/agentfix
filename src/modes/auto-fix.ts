@@ -51,21 +51,23 @@ export async function runAutoFix(
 
   const provider = config.providers.openclaw;
   const token = process.env[provider.tokenEnv] ?? "";
+  const baseUrl = process.env.AGENTFIX_OPENCLAW_BASE_URL || provider.baseUrl;
+  const model = process.env.AGENTFIX_OPENCLAW_MODEL || provider.model;
 
   if (!token) {
     return {
       ok: false,
       provider: "openclaw",
-      model: provider.model,
+      model,
       httpCode: 0,
       message: `Missing token env: ${provider.tokenEnv}`
     };
   }
 
   return dispatchOpenClaw({
-    baseUrl: provider.baseUrl,
+    baseUrl,
     token,
-    model: provider.model,
+    model,
     prompt
   });
 }

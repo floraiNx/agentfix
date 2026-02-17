@@ -16,6 +16,10 @@
     "env:check": "bun scripts/deploy/check-runtime-env.ts",
     "docker:build": "docker build -t agentfix:local .",
     "docker:run": "docker run --rm -p 8787:8787 --env-file .env agentfix:local",
+    "sentry:fetch": "bun scripts/sentry-fetch-issues.ts --projects \"$SENTRY_PROJECTS\" --max \"${MAX_ISSUES:-5}\"",
+    "sentry:sync-issues": "bun scripts/sentry-sync-github-issues.ts",
+    "sentry:build-contexts": "bun scripts/sentry-build-contexts.ts",
+    "sentry:dispatch-contexts": "bun scripts/sentry-dispatch-contexts.ts",
     "demo:create": "bash scripts/demo/create-demo-repo.sh --name agentfix-demo-target --visibility private",
     "demo:request-changes": "bash scripts/demo/enable-auto-request-changes.sh --repo \"$AGENTFIX_DEMO_REPO\" --pr \"${AGENTFIX_DEMO_PR:-1}\""
   },

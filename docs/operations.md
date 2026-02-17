@@ -33,3 +33,10 @@ If GitHub App webhook calls fail:
 1. Verify `GITHUB_WEBHOOK_SECRET` matches your GitHub App webhook config
 2. Check `GET /app/meta` for missing app envs
 3. Ensure app is installed on target repo and payload contains `installation.id`
+
+If Sentry loop fails:
+
+1. Validate `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECTS`
+2. Run `bun scripts/sentry-fetch-issues.ts --projects <p1,p2> --max 3` locally
+3. Check workflow summary counts (`fetch_count`, `to_fix`, `selected`)
+4. Ensure `OPENCLAW_TOKEN` and `AGENTFIX_OPENCLAW_BASE_URL` are configured for dispatch

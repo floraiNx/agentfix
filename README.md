@@ -5,7 +5,7 @@ AgentFix is a repo-agnostic automation platform for AI-assisted remediation and 
 It gives teams a reusable control plane for:
 
 - review-driven auto-fix dispatch
-- Sentry-style error triage into fix workflows
+- Sentry issue sync + auto-remediation dispatch workflows
 - parallel bug-hunt orchestration with branch-safe merge polling
 
 ## What you get
@@ -13,6 +13,7 @@ It gives teams a reusable control plane for:
 - **GitHub App runtime** with webhook signature verification
 - **OpenClaw-first dispatch adapter** (`/v1/chat/completions` compatible)
 - **Auto-fix prompt planner** with finding deduplication
+- **Sentry full loop** (fetch unresolved issues, track/dedupe in GitHub Issues, build contexts, dispatch fixes)
 - **Bug-hunt campaign orchestration** (worktrees, workers, poller)
 - **Config contract** via `.agentfix.yml`
 - **Scaffold tooling** for workflows and GitHub App manifest
@@ -86,6 +87,21 @@ Production deployment options are ready in-repo:
 - Fly.io: `fly.toml`
 
 See: `docs/deploy.md`
+
+## Sentry Loop
+
+The repository includes a fully wired Sentry pipeline:
+
+```bash
+bun run sentry:fetch
+bun run sentry:sync-issues
+bun run sentry:build-contexts
+bun run sentry:dispatch-contexts
+```
+
+GitHub Actions version:
+
+- `.github/workflows/agentfix-sentry-gap.yml`
 
 ## End-to-End Demo
 

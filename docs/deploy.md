@@ -9,6 +9,12 @@ This guide covers practical production deployment options for AgentFix.
 - `GITHUB_APP_PRIVATE_KEY`
 - `GITHUB_WEBHOOK_SECRET`
 
+Required for Sentry workflow:
+
+- `SENTRY_AUTH_TOKEN`
+- `SENTRY_ORG` (repo variable)
+- `SENTRY_PROJECTS` (repo variable)
+
 Validate locally:
 
 ```bash

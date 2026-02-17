@@ -12,6 +12,8 @@ describe("workflow templates", () => {
   test("sentry gap template contains schedule", () => {
     const yaml = sentryGapWorkflowTemplate();
     expect(yaml).toContain("0 */4 * * *");
-    expect(yaml).toContain("Dispatch AgentFix");
+    expect(yaml).toContain("scripts/sentry-fetch-issues.ts");
+    expect(yaml).toContain("scripts/sentry-sync-github-issues.ts");
+    expect(yaml).toContain("scripts/sentry-dispatch-contexts.ts");
   });
 });

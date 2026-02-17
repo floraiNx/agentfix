@@ -77,6 +77,15 @@ bash scripts/demo/create-demo-repo.sh --name agentfix-demo-target --visibility p
 bash scripts/demo/enable-auto-request-changes.sh --repo <owner/agentfix-demo-target> --pr 1
 ```
 
+## 8) Run Sentry loop locally (optional)
+
+```bash
+SENTRY_AUTH_TOKEN=... SENTRY_ORG=... SENTRY_PROJECTS=backend bun run sentry:fetch
+GITHUB_TOKEN=... GITHUB_REPOSITORY=<owner/repo> bun run sentry:sync-issues
+GITHUB_REPOSITORY=<owner/repo> bun run sentry:build-contexts
+OPENCLAW_TOKEN=... AGENTFIX_OPENCLAW_BASE_URL=https://your-openclaw-host GITHUB_TOKEN=... GITHUB_REPOSITORY=<owner/repo> bun run sentry:dispatch-contexts
+```
+
 For full details see:
 
 - `docs/github-app-setup.md`

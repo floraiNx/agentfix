@@ -4,22 +4,122 @@ on:
   schedule:
     - cron: '0 */4 * * *'
   workflow_dispatch:
+    inputs:
+      projects:
+        description: Comma-separated Sentry project slugs
+        required: false
+        type: string
+      max_issues:
+        description: Max Sentry issues to fetch per project
+        required: false
+        default: "5"
+        type: string
+      max_fixes_per_run:
+        description: Max Sentry issues to dispatch per run
+        required: false
+        default: "3"
+        type: string
+      target_branch:
+        description: Target branch for remediation context
+        required: false
+        default: "dev"
+        type: string
 
 permissions:
   contents: write
   issues: write
   pull-requests: write
 
+concurrency:
+  group: agentfix-sentry-gap
+  cancel-in-progress: true
+
+env:
+  DEFAULT_PROJECTS: backend
+  DEFAULT_MAX_ISSUES: "5"
+  DEFAULT_MAX_FIXES: "3"
+
 jobs:
-  detect:
+  sentry-loop:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile || bun install
-      - name: Fetch Sentry issues
+
+      - name: Fetch unresolved Sentry issues
+        id: fetch
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG || 'your-org' }}
+          SENTRY_URL: ${{ vars.SENTRY_URL || 'https://sentry.io' }}
+          SENTRY_PROJECTS: ${{ github.event.inputs.projects || vars.SENTRY_PROJECTS || env.DEFAULT_PROJECTS }}
+          MAX_ISSUES: ${{ github.event.inputs.max_issues || env.DEFAULT_MAX_ISSUES }}
         run: |
-          echo 'Wire your Sentry fetch script or API call here'
-      - name: Dispatch AgentFix
+          bun scripts/sentry-fetch-issues.ts --projects "$SENTRY_PROJECTS" --max "$MAX_ISSUES" > /tmp/sentry-issues.json
+          COUNT=$(jq 'length' /tmp/sentry-issues.json)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Fetched $COUNT unresolved Sentry issues"
+
+      - name: Sync Sentry issues to GitHub Issues
+        if: steps.fetch.outputs.count != '0'
+        id: sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          SENTRY_ISSUES_FILE: /tmp/sentry-issues.json
+          SENTRY_TO_FIX_FILE: /tmp/sentry-to-fix.json
+          SENTRY_RETRY_COOLDOWN_HOURS: "24"
         run: |
-          bun src/cli.ts run autofix --event-file examples/sample-autofix-event.json --dry-run
+          bun scripts/sentry-sync-github-issues.ts
+          TO_FIX=$(jq 'length' /tmp/sentry-to-fix.json)
+          echo "to_fix=$TO_FIX" >> "$GITHUB_OUTPUT"
+          echo "Sentry issues queued for remediation: $TO_FIX"
+
+      - name: Build auto-fix contexts
+        if: steps.sync.outputs.to_fix != '0'
+        id: contexts
+        env:
+          SENTRY_TO_FIX_FILE: /tmp/sentry-to-fix.json
+          SENTRY_FIX_CONTEXTS_FILE: /tmp/sentry-fix-contexts.json
+          MAX_FIXES_PER_RUN: ${{ github.event.inputs.max_fixes_per_run || env.DEFAULT_MAX_FIXES }}
+          TARGET_BRANCH: ${{ github.event.inputs.target_branch || 'dev' }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          bun scripts/sentry-build-contexts.ts
+          SELECTED=$(jq 'length' /tmp/sentry-fix-contexts.json)
+          echo "selected=$SELECTED" >> "$GITHUB_OUTPUT"
+          echo "Selected remediation contexts: $SELECTED"
+
+      - name: Check dispatch provider readiness
+        id: provider
+        env:
+          OPENCLAW_TOKEN: ${{ secrets.OPENCLAW_TOKEN }}
+        run: |
+          if [ -n "$OPENCLAW_TOKEN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::OPENCLAW_TOKEN missing. Issues tracked, dispatch skipped."
+          fi
+
+      - name: Dispatch contexts to AgentFix provider
+        if: steps.contexts.outputs.selected != '0' && steps.provider.outputs.ready == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          OPENCLAW_TOKEN: ${{ secrets.OPENCLAW_TOKEN }}
+          AGENTFIX_OPENCLAW_BASE_URL: ${{ vars.OPENCLAW_URL || vars.AGENTFIX_OPENCLAW_BASE_URL || 'https://openclaw.example.com' }}
+          AGENTFIX_OPENCLAW_MODEL: ${{ vars.OPENCLAW_MODEL || 'openai-codex/gpt-5.3-codex' }}
+          SENTRY_FIX_CONTEXTS_FILE: /tmp/sentry-fix-contexts.json
+        run: |
+          bun scripts/sentry-dispatch-contexts.ts
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "fetch_count=${{ steps.fetch.outputs.count || '0' }}"
+          echo "to_fix=${{ steps.sync.outputs.to_fix || '0' }}"
+          echo "selected=${{ steps.contexts.outputs.selected || '0' }}"
