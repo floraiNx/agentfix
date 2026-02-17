@@ -74,6 +74,7 @@ Install the app on a repository and trigger a `pull_request_review` event with `
 
 ```bash
 bash scripts/demo/create-demo-repo.sh --name agentfix-demo-target --visibility private
+bash scripts/demo/enable-auto-request-changes.sh --repo <owner/agentfix-demo-target> --pr 1
 ```
 
 For full details see:

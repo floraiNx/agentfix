@@ -95,7 +95,11 @@ Generate a real demo target repo + PR automatically:
 bash scripts/demo/create-demo-repo.sh --name agentfix-demo-target --visibility private
 ```
 
-Then submit a PR review with `changes_requested` to trigger AgentFix.
+Then trigger an automated `REQUEST_CHANGES` review (no manual reviewer needed):
+
+```bash
+bash scripts/demo/enable-auto-request-changes.sh --repo <owner/agentfix-demo-target> --pr 1
+```
 
 See: `docs/e2e-demo.md`
 

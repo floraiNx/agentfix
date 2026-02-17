@@ -26,18 +26,19 @@ Output includes:
 
 The script creates a PR with an intentionally introduced tenant-isolation bug.
 
-## Step 2: Install GitHub App on the demo repo
+## Step 2: Trigger `REQUEST_CHANGES` automatically (no manual review)
 
-Follow `docs/github-app-setup.md` and install the app on the generated demo repo.
+Use the bot helper:
 
-## Step 3: Submit review requesting changes
+```bash
+bash scripts/demo/enable-auto-request-changes.sh \
+  --repo <owner/agentfix-demo-target> \
+  --pr 1
+```
 
-In the demo PR:
+This adds and triggers a workflow that submits an inline `REQUEST_CHANGES` review as `github-actions[bot]`.
 
-1. add an inline review comment on `src/order-service.js`
-2. submit review as `Request changes`
-
-## Step 4: Observe AgentFix service logs
+## Step 3: Observe AgentFix service logs
 
 Expected sequence:
 

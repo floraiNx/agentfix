@@ -15,7 +15,9 @@
     "check": "bun run typecheck && bun run test",
     "env:check": "bun scripts/deploy/check-runtime-env.ts",
     "docker:build": "docker build -t agentfix:local .",
-    "docker:run": "docker run --rm -p 8787:8787 --env-file .env agentfix:local"
+    "docker:run": "docker run --rm -p 8787:8787 --env-file .env agentfix:local",
+    "demo:create": "bash scripts/demo/create-demo-repo.sh --name agentfix-demo-target --visibility private",
+    "demo:request-changes": "bash scripts/demo/enable-auto-request-changes.sh --repo \"$AGENTFIX_DEMO_REPO\" --pr \"${AGENTFIX_DEMO_PR:-1}\""
   },
   "dependencies": {
     "fastify": "^5.2.1",

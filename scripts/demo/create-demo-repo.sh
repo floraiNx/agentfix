@@ -115,7 +115,19 @@ npm test >/dev/null 2>&1 || true
 git add .
 git commit -m "feat: add tenant-scoped order update baseline" >/dev/null
 
-git checkout -b feature/remove-tenant-guard >/dev/null
+if [[ ${SKIP_REMOTE} -eq 1 ]]; then
+  git checkout -b feature/remove-tenant-guard >/dev/null
+else
+  FULL_REPO="${OWNER}/${REPO_NAME}"
+  gh repo create "${FULL_REPO}" "--${VISIBILITY}" --source . --remote origin --push >/dev/null
+  # Ensure default branch stays main on newly created repo.
+  gh api "repos/${FULL_REPO}" --method PATCH -f default_branch=main >/dev/null
+
+  git checkout main >/dev/null
+  git push -u origin main >/dev/null
+  git checkout -b feature/remove-tenant-guard >/dev/null
+fi
+
 cat > src/order-service.js <<'JS'
 export function updateOrderTenantScoped(order, actorTenantId, patch) {
   // Bug introduced intentionally for demo: tenant guard removed.
@@ -137,14 +149,6 @@ if [[ ${SKIP_REMOTE} -eq 1 ]]; then
   exit 0
 fi
 
-FULL_REPO="${OWNER}/${REPO_NAME}"
-
-gh repo create "${FULL_REPO}" "--${VISIBILITY}" --source . --remote origin --push >/dev/null
-
-git checkout main >/dev/null
-git push -u origin main >/dev/null
-
-git checkout feature/remove-tenant-guard >/dev/null
 git push -u origin feature/remove-tenant-guard >/dev/null
 
 PR_URL=""
